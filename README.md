@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Edo's Cloud & DevOps Portfolio
+
+> Built like infrastructure. Deployed like infrastructure. **Is** infrastructure.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     PORTFOLIO INFRA                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   ┌──────────┐    ┌──────────┐    ┌──────────────────┐     │
+│   │  GitHub  │───▶│  GitHub  │───▶│     Vercel       │     │
+│   │   Repo   │    │  Actions │    │  (Edge Network)  │     │
+│   └──────────┘    └──────────┘    └──────────────────┘     │
+│                         │                    │              │
+│                    ┌────▼────┐         ┌─────▼─────┐       │
+│                    │  Lint   │         │  CDN Edge │       │
+│                    │  Build  │         │  (Global) │       │
+│                    │  Test   │         └───────────┘       │
+│                    └─────────┘                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14+ (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| Animations | Framer Motion |
+| Fonts | JetBrains Mono + IBM Plex Sans |
+| CI/CD | GitHub Actions |
+| Hosting | Vercel (Edge Network) |
+| DNS | Vercel DNS / Custom domain |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Clone
+git clone https://github.com/edothecreator/portfolio.git
+cd portfolio
+
+# Install
+npm install
+
+# Dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build
+npm run build
+
+# Start production
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+portfolio/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx          # Root layout + metadata
+│   │   ├── page.tsx            # Main page orchestrator
+│   │   └── globals.css         # Tailwind + custom animations
+│   └── components/
+│       ├── BootSequence.tsx     # Terminal boot animation
+│       ├── Hero.tsx             # Hero + ASCII architecture
+│       ├── SkillsMatrix.tsx     # Skills dashboard panels
+│       ├── Projects.tsx         # Deployment cards
+│       ├── CertPipeline.tsx     # Cert pipeline visualization
+│       ├── Terminal.tsx         # Interactive terminal
+│       └── Contact.tsx          # SSH-themed contact
+├── public/
+│   └── resume.pdf              # Downloadable CV
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # CI/CD pipeline
+└── README.md                   # You are here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+### Automatic (CI/CD)
+Every push to `main` triggers:
+1. **Lint** — ESLint checks
+2. **Build** — Next.js production build
+3. **Deploy** — Vercel production deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Manual
+```bash
+npx vercel --prod
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Required Secrets (GitHub)
+- `VERCEL_TOKEN` — Vercel API token
+- `VERCEL_ORG_ID` — Vercel organization ID
+- `VERCEL_PROJECT_ID` — Vercel project ID
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Performance Targets
 
-## Deploy on Vercel
+- Lighthouse Performance: ≥ 90
+- Lighthouse Accessibility: ≥ 95
+- Lighthouse Best Practices: ≥ 95
+- Lighthouse SEO: ≥ 95
+- First Contentful Paint: < 1.5s
+- Largest Contentful Paint: < 2.5s
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Design Decisions
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Dark mode only** — no toggle. This is a terminal.
+- **Monospace-first typography** — every heading is a command.
+- **Status indicators** — honest self-assessment (ACTIVE/LEARNING/PLANNED).
+- **Interactive terminal** — functional command input, not decoration.
+- **Reduced motion support** — respects `prefers-reduced-motion`.
+- **Mobile-first** — works on every screen size.
+
+## Author
+
+**Mohamed "Edo" ELKHANFAF**  
+Cloud & DevOps Engineer  
+[GitHub](https://github.com/edothecreator) · [LinkedIn](https://linkedin.com/in/mohamed-el-khanfaf) · [Email](mailto:mohamedelkhanfaf0@gmail.com)
+
+---
+
+```
+$ terraform apply -auto-approve
+```
