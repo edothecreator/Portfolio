@@ -2,83 +2,200 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import ProjectThumbnail from "./ProjectThumbnail";
 
-type ProjectStatus = "DEPLOYED" | "LIVE" | "IN PROGRESS";
+/* ─── CloudScale terminal mockup ─────────────────────────────────── */
+function CloudScaleMockup() {
+  const tfLines = [
+    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_vpc" "main"             {}' },
+    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_subnet" "public"         {}' },
+    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_subnet" "private"        {}' },
+    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_db_instance" "postgres"  {}' },
+  ];
 
-interface Project {
-  name: string;
-  codename: string;
-  status: ProjectStatus;
-  stack: string[];
-  description: string;
-  metrics?: string;
-  links: { label: string; url: string }[];
-  thumbnail: "vpc" | "zerotrust" | "cineapi" | "cinetrack";
+  return (
+    <div className="bg-[#0d1117] border-b border-border/50 overflow-hidden">
+      {/* Window chrome */}
+      <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-border/40">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+        <span className="font-mono text-[10px] text-muted ml-2">terraform plan — cloudscale</span>
+        {/* Status badge */}
+        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] font-semibold text-secondary">
+          <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active" />
+          DEPLOYED
+        </span>
+      </div>
+
+      <div className="p-4 font-mono text-[11px] leading-relaxed space-y-0.5">
+        <p className="text-muted">$ terraform plan -out=tfplan</p>
+        <p className="text-muted/50 h-2" />
+        <p className="text-text/70">Terraform will perform the following actions:</p>
+        <p className="text-muted/50 h-1" />
+        {tfLines.map((l, i) => (
+          <p key={i}>
+            <span className={`${l.color} font-bold`}>{l.prefix}</span>
+            <span className="text-text/80">{l.text}</span>
+          </p>
+        ))}
+        <p className="text-muted/50 h-1" />
+        <p>
+          <span className="text-secondary font-bold">Plan:</span>
+          <span className="text-text/70"> 15 to add, 0 to change, 0 to destroy.</span>
+        </p>
+      </div>
+
+      {/* AZ topology strip */}
+      <div className="mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-3">
+        <p className="font-mono text-[9px] text-muted mb-2 uppercase tracking-widest">
+          Network Topology — 2 AZs
+        </p>
+        <div className="flex gap-3">
+          {["AZ-1a", "AZ-1b"].map((az) => (
+            <div key={az} className="flex-1 border border-border/30 rounded p-2 bg-bg/60">
+              <p className="font-mono text-[9px] text-primary mb-1">{az}</p>
+              <p className="font-mono text-[9px] text-muted">public  subnet</p>
+              <p className="font-mono text-[9px] text-muted">private subnet</p>
+              <p className="font-mono text-[9px] text-muted">db      subnet</p>
+            </div>
+          ))}
+          <div className="flex-1 border border-secondary/20 rounded p-2 bg-secondary/5">
+            <p className="font-mono text-[9px] text-secondary mb-1">Cost Save</p>
+            <p className="font-mono text-[9px] text-text">−$65/mo</p>
+            <p className="font-mono text-[9px] text-muted">no NAT GW</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-const statusStyles: Record<ProjectStatus, string> = {
-  DEPLOYED: "text-secondary",
-  LIVE: "text-primary",
-  "IN PROGRESS": "text-accent",
-};
+/* ─── PitchOps terminal mockup ───────────────────────────────────── */
+function PitchOpsMockup() {
+  const stages = [
+    { name: "build",   status: "passed",   color: "text-secondary", dot: "bg-secondary" },
+    { name: "test",    status: "passed",   color: "text-secondary", dot: "bg-secondary" },
+    { name: "scan",    status: "passed",   color: "text-secondary", dot: "bg-secondary" },
+    { name: "push",    status: "passed",   color: "text-secondary", dot: "bg-secondary" },
+    { name: "deploy",  status: "passed",   color: "text-secondary", dot: "bg-secondary" },
+  ];
 
-const projects: Project[] = [
+  const containers = [
+    { name: "frontend",  image: "next:alpine",    port: "3000", status: "Up" },
+    { name: "backend",   image: "python:3.11",    port: "8000", status: "Up" },
+    { name: "nginx",     image: "nginx:alpine",   port: "80",   status: "Up" },
+  ];
+
+  return (
+    <div className="bg-[#0d1117] border-b border-border/50 overflow-hidden">
+      {/* Window chrome */}
+      <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-border/40">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+        <span className="font-mono text-[10px] text-muted ml-2">gitlab-ci — pitchops · main</span>
+        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] font-semibold text-secondary">
+          <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active" />
+          DEPLOYED
+        </span>
+      </div>
+
+      {/* Pipeline stages */}
+      <div className="px-4 pt-3 pb-2">
+        <p className="font-mono text-[9px] text-muted uppercase tracking-widest mb-2">
+          Pipeline · #47 · triggered by push to main
+        </p>
+        <div className="flex items-center gap-1 flex-wrap">
+          {stages.map((s, i) => (
+            <div key={s.name} className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5 border border-secondary/20 rounded px-2 py-1 bg-secondary/5">
+                <span className={`w-1.5 h-1.5 rounded-full ${s.dot} status-active`} />
+                <span className={`font-mono text-[9px] ${s.color}`}>{s.name}</span>
+              </div>
+              {i < stages.length - 1 && (
+                <span className="font-mono text-[9px] text-muted/40">→</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Trivy scan output */}
+        <div className="mt-2 font-mono text-[10px] space-y-0.5">
+          <p>
+            <span className="text-accent">▶</span>
+            <span className="text-text/70"> trivy image scan </span>
+            <span className="text-secondary">✓ 0 HIGH · 0 CRITICAL</span>
+          </p>
+          <p>
+            <span className="text-accent">▶</span>
+            <span className="text-text/70"> docker push → ECR </span>
+            <span className="text-primary">sha256:a3f9…</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Container topology */}
+      <div className="mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-3">
+        <p className="font-mono text-[9px] text-muted mb-2 uppercase tracking-widest">
+          docker compose ps — EC2 production
+        </p>
+        <div className="space-y-1">
+          {containers.map((c) => (
+            <div key={c.name} className="flex items-center gap-3 font-mono text-[9px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active shrink-0" />
+              <span className="text-primary w-20">{c.name}</span>
+              <span className="text-muted/70 flex-1">{c.image}</span>
+              <span className="text-text/60">:{c.port}</span>
+              <span className="text-secondary">{c.status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Project card ───────────────────────────────────────────────── */
+interface ProjectData {
+  name: string;
+  codename: string;
+  description: string;
+  stack: string[];
+  links: { label: string; url: string }[];
+  command: string;
+  mockup: React.ReactNode;
+}
+
+const projects: ProjectData[] = [
   {
-    name: "CloudScale VPC Lab",
-    codename: "vpc-lab",
-    status: "DEPLOYED",
-    stack: ["AWS", "Terraform", "EC2", "RDS", "ALB", "CloudWatch"],
+    name: "CloudScale",
+    codename: "cloudscale",
     description:
-      "Production-grade 3-tier VPC across 2 AZs. Public/Private/DB subnets, bastion host, encrypted RDS, ALB with health checks. Infrastructure fully reproducible via Terraform.",
-    metrics: "2 AZs · 6 subnets · 1 bastion · 1 ALB · 1 RDS Multi-AZ",
+      "Production-ready 15-service AWS infrastructure entirely automated via Terraform with remote S3/DynamoDB state locking. Architected secure private subnets for RDS without NAT Gateways, cutting cloud costs by $65/month. Integrated an event-driven serverless AI pipeline (S3 → Lambda → Rekognition → DynamoDB).",
+    stack: ["AWS", "Terraform", "Lambda", "S3", "DynamoDB", "RDS", "Rekognition"],
     links: [
-      { label: "GitHub", url: "https://github.com/edothecreator" },
+      { label: "GitHub",              url: "https://github.com/edothecreator" },
+      { label: "Architecture Diagram", url: "#" },
     ],
-    thumbnail: "vpc",
+    command: "$ terraform apply",
+    mockup: <CloudScaleMockup />,
   },
   {
-    name: "ZeroTrust Dual-Account AWS",
-    codename: "zero-trust",
-    status: "DEPLOYED",
-    stack: ["AWS", "IAM", "SCPs", "GuardDuty", "Security Hub", "CloudTrail"],
+    name: "PitchOps",
+    codename: "pitchops",
     description:
-      "Dual-account setup (prod/security) with centralized logging, GuardDuty threat detection, SCP enforcement, and least-privilege IAM. Built for security-focused DevOps.",
+      "Containerized multi-service football analytics platform running on a hardened Linux server. Automated the entire SDLC using GitLab CI/CD pipelines for automated testing, Docker multi-stage builds, and Trivy security scans pushing to Amazon ECR. Paired a static Next.js frontend (S3/CloudFront) with a containerized backend.",
+    stack: ["Docker", "GitLab CI/CD", "AWS", "EC2", "S3", "CloudFront", "Linux", "Next.js"],
     links: [
-      { label: "GitHub", url: "https://github.com/edothecreator" },
-      { label: "LinkedIn Post", url: "https://linkedin.com/in/mohamed-el-khanfaf" },
+      { label: "GitHub",        url: "https://github.com/edothecreator" },
+      { label: "Pipeline Logs", url: "#" },
     ],
-    thumbnail: "zerotrust",
-  },
-  {
-    name: "CineAPI — Containerized Microservice",
-    codename: "cineapi",
-    status: "LIVE",
-    stack: ["Flask", "PostgreSQL", "Redis", "Nginx", "Docker Compose", "GitHub Actions"],
-    description:
-      "Full movie review REST API. Multi-container with Redis caching, Nginx reverse proxy, GitHub Actions CI/CD pipeline, deployed on Railway.",
-    links: [
-      { label: "GitHub", url: "https://github.com/edothecreator" },
-      { label: "Live", url: "#" },
-    ],
-    thumbnail: "cineapi",
-  },
-  {
-    name: "CINETRACK — Academic DevOps Platform",
-    codename: "cinetrack",
-    status: "LIVE",
-    stack: ["Next.js", "Neon PostgreSQL", "GitLab CI/CD", "Vercel", "Docker"],
-    description:
-      "Team project with full GitOps workflow: GitLab pipelines, Docker builds, Vercel auto-deploy, Neon serverless Postgres. Full DevOps report written.",
-    links: [
-      { label: "GitLab", url: "#" },
-      { label: "Live", url: "#" },
-    ],
-    thumbnail: "cinetrack",
+    command: "$ docker compose up -d",
+    mockup: <PitchOpsMockup />,
   },
 ];
 
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({ project, index }: { project: ProjectData; index: number }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
@@ -87,46 +204,20 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
-      className="group relative bg-surface border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 glow-cyan-hover"
+      transition={{ delay: index * 0.15, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+      className="group relative bg-surface border border-border rounded-xl overflow-hidden
+                 hover:border-primary/50 transition-all duration-300 glow-cyan-hover flex flex-col"
     >
-      {/* Deploy progress bar */}
-      <div className="h-0.5 bg-border overflow-hidden">
+      {/* Animated top deploy bar */}
+      <div className="h-0.5 bg-border overflow-hidden shrink-0">
         <div className="deploy-bar h-full bg-gradient-to-r from-primary via-secondary to-primary w-0" />
       </div>
 
-      {/* Thumbnail — like a YouTube/project preview */}
-      <div className="relative overflow-hidden border-b border-border/50">
-        {/* 
-          Replace ProjectThumbnail with a real screenshot:
-          <Image src={`/projects/${project.codename}.png`} alt={project.name} width={400} height={225} className="w-full" />
-        */}
-        <ProjectThumbnail
-          variant={project.thumbnail}
-          className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.02]"
-        />
-        {/* Overlay gradient on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        {/* Status badge overlay */}
-        <div className="absolute top-3 right-3">
-          <span
-            className={`font-mono text-[10px] font-semibold px-2 py-0.5 rounded bg-bg/80 backdrop-blur-sm border border-border/50 ${statusStyles[project.status]} flex items-center gap-1.5`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                project.status === "DEPLOYED"
-                  ? "bg-secondary status-active"
-                  : project.status === "LIVE"
-                  ? "bg-primary status-active"
-                  : "bg-accent status-learning"
-              }`}
-            />
-            {project.status}
-          </span>
-        </div>
-      </div>
+      {/* Terminal mockup */}
+      {project.mockup}
 
-      <div className="p-5 sm:p-6">
+      {/* Card body */}
+      <div className="p-5 sm:p-6 flex flex-col flex-1">
         {/* Header */}
         <div className="mb-3">
           <h3 className="font-mono text-base font-semibold text-text">
@@ -137,12 +228,13 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           </p>
         </div>
 
-        {/* Stack tags */}
+        {/* Stack chips */}
         <div className="flex flex-wrap gap-1.5 mb-4">
           {project.stack.map((tech) => (
             <span
               key={tech}
-              className="font-mono text-[10px] px-2 py-0.5 bg-border/50 text-muted rounded border border-border"
+              className="font-mono text-[10px] px-2 py-0.5 bg-border/50 text-muted rounded border border-border
+                         hover:border-primary/40 hover:text-text transition-colors duration-200"
             >
               {tech}
             </span>
@@ -150,18 +242,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         </div>
 
         {/* Description */}
-        <p className="text-sm text-text/80 leading-relaxed mb-4">
+        <p className="text-sm text-text/80 leading-relaxed mb-4 flex-1">
           {project.description}
         </p>
 
-        {/* Metrics */}
-        {project.metrics && (
-          <p className="font-mono text-[11px] text-primary/70 mb-4">
-            {project.metrics}
-          </p>
-        )}
-
-        {/* Links */}
+        {/* Links + command */}
         <div className="flex items-center gap-3 pt-3 border-t border-border/50">
           {project.links.map((link) => (
             <a
@@ -169,13 +254,13 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs text-muted hover:text-primary transition-colors"
+              className="font-mono text-xs text-muted hover:text-primary transition-colors duration-200"
             >
               [{link.label}]
             </a>
           ))}
-          <span className="font-mono text-[10px] text-muted/50 ml-auto">
-            $ terraform apply
+          <span className="font-mono text-[10px] text-muted/40 ml-auto whitespace-nowrap">
+            {project.command}
           </span>
         </div>
       </div>
@@ -183,6 +268,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   );
 }
 
+/* ─── Section ────────────────────────────────────────────────────── */
 export default function Projects() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -199,7 +285,7 @@ export default function Projects() {
           <span className="text-secondary">#</span> DEPLOYMENTS
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {projects.map((project, i) => (
             <ProjectCard key={project.codename} project={project} index={i} />
           ))}

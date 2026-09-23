@@ -170,7 +170,6 @@ export default function Terminal() {
                 autoComplete="off"
                 aria-label="Terminal input"
               />
-              <span className="w-2 h-4 bg-secondary cursor-blink" />
             </div>
           </div>
         </div>

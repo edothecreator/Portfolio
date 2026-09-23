@@ -1,16 +1,14 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-type StatusType = "ACTIVE" | "LEARNING" | "PLANNED" | "AWARE";
+type StatusType = "ACTIVE" | "LEARNING";
 
 interface Skill {
   name: string;
   status: StatusType;
-  details?: string;
-  level?: number;
+  details: string;
 }
 
 interface Panel {
@@ -20,17 +18,13 @@ interface Panel {
 }
 
 const statusColors: Record<StatusType, string> = {
-  ACTIVE: "text-secondary",
+  ACTIVE:   "text-secondary",
   LEARNING: "text-accent",
-  PLANNED: "text-muted",
-  AWARE: "text-muted/60",
 };
 
 const statusDotColors: Record<StatusType, string> = {
-  ACTIVE: "bg-secondary status-active",
+  ACTIVE:   "bg-secondary status-active",
   LEARNING: "bg-accent status-learning",
-  PLANNED: "bg-muted/50",
-  AWARE: "bg-muted/30",
 };
 
 const panels: Panel[] = [
@@ -41,14 +35,7 @@ const panels: Panel[] = [
       {
         name: "AWS",
         status: "ACTIVE",
-        level: 90,
-        details: "EC2, VPC, IAM, S3, RDS, Lambda, CloudFront, Route 53, EKS, ECR, CloudWatch, Secrets Manager",
-      },
-      {
-        name: "GCP",
-        status: "PLANNED",
-        level: 15,
-        details: "Compute Engine, Cloud Run — exploring",
+        details: "EC2 · S3 · RDS · Lambda · CloudFront · IAM · DynamoDB · VPC · CloudWatch",
       },
     ],
   },
@@ -59,91 +46,57 @@ const panels: Panel[] = [
       {
         name: "Terraform",
         status: "ACTIVE",
-        details: "HCL · modules · remote state · workspaces",
+        details: "HCL · modules · remote state locking (S3/DynamoDB) · cost optimization",
       },
       {
         name: "Ansible",
         status: "LEARNING",
-        details: "playbooks · roles · inventory",
-      },
-      {
-        name: "CloudFormation",
-        status: "AWARE",
-        details: "stacks · nested templates",
+        details: "Playbooks · roles · inventory",
       },
     ],
   },
   {
-    title: "Containers & Orchestration",
+    title: "Containers & Systems",
     icon: "🐳",
     skills: [
       {
         name: "Docker",
         status: "ACTIVE",
-        details: "Dockerfile · Compose · multi-stage builds",
+        details: "Dockerfiles · multi-stage builds · containerization",
       },
       {
-        name: "Kubernetes",
+        name: "Linux Administration",
         status: "ACTIVE",
-        details: "Deployments · Services · Ingress · HPA",
-      },
-      {
-        name: "Helm",
-        status: "LEARNING",
-        details: "Charts · values override · templating",
-      },
-      {
-        name: "ArgoCD",
-        status: "PLANNED",
-        details: "GitOps · sync policies",
+        details: "RHEL/Ubuntu · systemd · journalctl · networking · permissions",
       },
     ],
   },
   {
-    title: "CI/CD & Observability",
+    title: "CI/CD & Delivery",
     icon: "🔄",
     skills: [
       {
-        name: "GitHub Actions",
-        status: "ACTIVE",
-        details: "Workflows · matrix builds · secrets",
-      },
-      {
         name: "GitLab CI/CD",
         status: "ACTIVE",
-        details: "Pipelines · stages · artifacts",
+        details: "Pipelines · stages · artifacts · security scans · ECR integration",
       },
       {
-        name: "Jenkins",
-        status: "AWARE",
-        details: "Declarative pipelines",
+        name: "GitHub Actions",
+        status: "ACTIVE",
+        details: "Workflows · secrets · automated testing",
       },
       {
-        name: "Prometheus + Grafana",
-        status: "LEARNING",
-        details: "Metrics · dashboards · alerting",
+        name: "Nginx",
+        status: "ACTIVE",
+        details: "Reverse proxy · routing · static optimization",
       },
     ],
   },
 ];
 
-function SkillBar({ level }: { level: number }) {
-  const filled = Math.round((level / 100) * 14);
-  const empty = 14 - filled;
-  return (
-    <div className="flex items-center gap-2 mt-1">
-      <span className="font-mono text-xs text-primary">
-        {"█".repeat(filled)}
-        {"░".repeat(empty)}
-      </span>
-      <span className="font-mono text-xs text-muted">{level}%</span>
-    </div>
-  );
-}
-
 function StatusBadge({ status }: { status: StatusType }) {
   return (
-    <span className="flex items-center gap-1.5">
+    <span className="flex items-center gap-1.5 shrink-0">
       <span className={`w-2 h-2 rounded-full ${statusDotColors[status]}`} />
       <span className={`font-mono text-[10px] uppercase ${statusColors[status]}`}>
         {status}
@@ -164,19 +117,17 @@ export default function SkillsMatrix() {
         transition={{ duration: 0.6 }}
         className="max-w-6xl mx-auto"
       >
-        {/* Section title */}
         <h2 className="font-mono text-lg text-muted mb-10">
           <span className="text-secondary">#</span> SKILLS_MATRIX
         </h2>
 
-        {/* Panels grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {panels.map((panel, panelIndex) => (
             <motion.div
               key={panel.title}
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: panelIndex * 0.15, duration: 0.5 }}
+              transition={{ delay: panelIndex * 0.12, duration: 0.5 }}
               className="bg-surface border border-border rounded-lg p-5 hover:border-primary/40 transition-all duration-300 glow-cyan-hover"
             >
               {/* Panel header */}
@@ -188,23 +139,18 @@ export default function SkillsMatrix() {
               </div>
 
               {/* Skills list */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {panel.skills.map((skill) => (
-                  <div key={skill.name} className="group">
-                    <div className="flex items-center justify-between">
+                  <div key={skill.name}>
+                    <div className="flex items-center justify-between gap-3">
                       <span className="font-mono text-sm text-text">
                         <span className="text-primary">▶</span> {skill.name}
                       </span>
                       <StatusBadge status={skill.status} />
                     </div>
-                    {skill.level && (
-                      <SkillBar level={skill.level} />
-                    )}
-                    {skill.details && (
-                      <p className="font-mono text-[11px] text-muted mt-1 pl-4">
-                        {skill.details}
-                      </p>
-                    )}
+                    <p className="font-mono text-[11px] text-muted mt-1.5 pl-4 leading-relaxed">
+                      {skill.details}
+                    </p>
                   </div>
                 ))}
               </div>

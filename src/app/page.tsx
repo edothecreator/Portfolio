@@ -6,7 +6,6 @@ import BootSequence from "@/components/BootSequence";
 import Hero from "@/components/Hero";
 import SkillsMatrix from "@/components/SkillsMatrix";
 import Projects from "@/components/Projects";
-import CertPipeline from "@/components/CertPipeline";
 import Terminal from "@/components/Terminal";
 import Contact from "@/components/Contact";
 
@@ -40,7 +39,6 @@ export default function Home() {
               {[
                 { label: "skills", href: "#skills" },
                 { label: "projects", href: "#projects" },
-                { label: "certs", href: "#certifications" },
                 { label: "about", href: "#about" },
                 { label: "contact", href: "#contact" },
               ].map((link) => (
@@ -68,7 +66,6 @@ export default function Home() {
         <Hero />
         <SkillsMatrix />
         <Projects />
-        <CertPipeline />
         <Terminal />
         <Contact />
       </motion.div>
