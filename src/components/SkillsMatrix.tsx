@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Image from "next/image";
 
 type StatusType = "ACTIVE" | "LEARNING";
 
@@ -14,6 +15,7 @@ interface Skill {
 interface Panel {
   title: string;
   icon: string;
+  logo?: { src: string; alt: string };
   skills: Skill[];
 }
 
@@ -31,6 +33,7 @@ const panels: Panel[] = [
   {
     title: "Cloud Platforms",
     icon: "☁️",
+    logo: { src: "/aws.jpg", alt: "AWS" },
     skills: [
       {
         name: "AWS",
@@ -42,6 +45,7 @@ const panels: Panel[] = [
   {
     title: "IaC & Automation",
     icon: "⚙️",
+    logo: { src: "/terraform.png", alt: "Terraform" },
     skills: [
       {
         name: "Terraform",
@@ -58,6 +62,7 @@ const panels: Panel[] = [
   {
     title: "Containers & Systems",
     icon: "🐳",
+    logo: { src: "/ansible.png", alt: "Ansible" },
     skills: [
       {
         name: "Docker",
@@ -132,7 +137,17 @@ export default function SkillsMatrix() {
             >
               {/* Panel header */}
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/50">
-                <span className="text-lg">{panel.icon}</span>
+                {panel.logo ? (
+                  <Image
+                    src={panel.logo.src}
+                    alt={panel.logo.alt}
+                    width={24}
+                    height={24}
+                    className="w-6 h-6 object-contain rounded-sm"
+                  />
+                ) : (
+                  <span className="text-lg">{panel.icon}</span>
+                )}
                 <h3 className="font-mono text-sm font-semibold text-text">
                   {panel.title}
                 </h3>
