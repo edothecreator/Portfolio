@@ -13,7 +13,7 @@ const bootLines = [
   { text: "", delay: 2400 },
   { text: "> whoami", delay: 2600 },
   {
-    text: 'Mohamed "Edo" ELKHANFAF — Cloud & DevOps Engineer',
+    text: 'Mohamed ELKHANFAF — Cloud & DevOps Engineer',
     delay: 2900,
     highlight: true,
   },
@@ -76,11 +76,11 @@ export default function BootSequence({
             </div>
 
             {/* Terminal body */}
-            <div className="p-4 sm:p-6 font-mono text-sm leading-relaxed min-h-[400px]">
+            <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-relaxed min-h-[360px] sm:min-h-[400px]">
               {bootLines.slice(0, visibleLines).map((line, i) => (
                 <div
                   key={i}
-                  className={`${
+                  className={`break-words ${
                     line.highlight
                       ? "text-primary font-semibold"
                       : line.text.startsWith(">")

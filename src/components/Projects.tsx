@@ -27,13 +27,13 @@ function CloudScaleMockup() {
         </span>
       </div>
 
-      <div className="p-4 font-mono text-[11px] leading-relaxed space-y-0.5">
+      <div className="p-3 sm:p-4 font-mono text-[10px] sm:text-[11px] leading-relaxed space-y-0.5 overflow-hidden">
         <p className="text-muted">$ terraform plan -out=tfplan</p>
         <p className="text-muted/50 h-2" />
         <p className="text-text/70">Terraform will perform the following actions:</p>
         <p className="text-muted/50 h-1" />
         {tfLines.map((l, i) => (
-          <p key={i}>
+          <p key={i} className="truncate">
             <span className={`${l.color} font-bold`}>{l.prefix}</span>
             <span className="text-text/80">{l.text}</span>
           </p>
@@ -46,23 +46,23 @@ function CloudScaleMockup() {
       </div>
 
       {/* AZ topology strip */}
-      <div className="mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-3">
+      <div className="mx-3 sm:mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-2 sm:p-3">
         <p className="font-mono text-[9px] text-muted mb-2 uppercase tracking-widest">
           Network Topology — 2 AZs
         </p>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
           {["AZ-1a", "AZ-1b"].map((az) => (
-            <div key={az} className="flex-1 border border-border/30 rounded p-2 bg-bg/60">
-              <p className="font-mono text-[9px] text-primary mb-1">{az}</p>
-              <p className="font-mono text-[9px] text-muted">public  subnet</p>
-              <p className="font-mono text-[9px] text-muted">private subnet</p>
-              <p className="font-mono text-[9px] text-muted">db      subnet</p>
+            <div key={az} className="border border-border/30 rounded p-1.5 sm:p-2 bg-bg/60">
+              <p className="font-mono text-[8px] sm:text-[9px] text-primary mb-1">{az}</p>
+              <p className="font-mono text-[8px] sm:text-[9px] text-muted">public</p>
+              <p className="font-mono text-[8px] sm:text-[9px] text-muted">private</p>
+              <p className="font-mono text-[8px] sm:text-[9px] text-muted">db</p>
             </div>
           ))}
-          <div className="flex-1 border border-secondary/20 rounded p-2 bg-secondary/5">
-            <p className="font-mono text-[9px] text-secondary mb-1">Cost Save</p>
-            <p className="font-mono text-[9px] text-text">−$65/mo</p>
-            <p className="font-mono text-[9px] text-muted">no NAT GW</p>
+          <div className="border border-secondary/20 rounded p-1.5 sm:p-2 bg-secondary/5">
+            <p className="font-mono text-[8px] sm:text-[9px] text-secondary mb-1">Cost</p>
+            <p className="font-mono text-[8px] sm:text-[9px] text-text">−$65/mo</p>
+            <p className="font-mono text-[8px] sm:text-[9px] text-muted">no NAT</p>
           </div>
         </div>
       </div>
@@ -135,18 +135,18 @@ function PitchOpsMockup() {
       </div>
 
       {/* Container topology */}
-      <div className="mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-3">
+      <div className="mx-3 sm:mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-2 sm:p-3">
         <p className="font-mono text-[9px] text-muted mb-2 uppercase tracking-widest">
           docker compose ps — EC2 production
         </p>
         <div className="space-y-1">
           {containers.map((c) => (
-            <div key={c.name} className="flex items-center gap-3 font-mono text-[9px]">
+            <div key={c.name} className="flex items-center gap-2 sm:gap-3 font-mono text-[9px]">
               <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active shrink-0" />
-              <span className="text-primary w-20">{c.name}</span>
-              <span className="text-muted/70 flex-1">{c.image}</span>
-              <span className="text-text/60">:{c.port}</span>
-              <span className="text-secondary">{c.status}</span>
+              <span className="text-primary w-16 sm:w-20 shrink-0">{c.name}</span>
+              <span className="text-muted/70 flex-1 truncate">{c.image}</span>
+              <span className="text-text/60 shrink-0">:{c.port}</span>
+              <span className="text-secondary shrink-0">{c.status}</span>
             </div>
           ))}
         </div>
@@ -247,7 +247,7 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
         </p>
 
         {/* Links + command */}
-        <div className="flex items-center gap-3 pt-3 border-t border-border/50">
+        <div className="flex items-center gap-3 pt-3 border-t border-border/50 flex-wrap">
           {project.links.map((link) => (
             <a
               key={link.label}
@@ -259,7 +259,7 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
               [{link.label}]
             </a>
           ))}
-          <span className="font-mono text-[10px] text-muted/40 ml-auto whitespace-nowrap">
+          <span className="hidden sm:inline font-mono text-[10px] text-muted/40 ml-auto">
             {project.command}
           </span>
         </div>

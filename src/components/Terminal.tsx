@@ -137,10 +137,11 @@ export default function Terminal() {
               <div key={i} className="leading-relaxed">
                 {line.type === "input" ? (
                   <div className="flex items-start gap-2">
-                    <span className="text-secondary shrink-0">
-                      edo@cloudstack:~$
+                    <span className="text-secondary shrink-0 text-[11px] sm:text-sm">
+                      <span className="hidden sm:inline">edo@cloudstack:~</span>
+                      <span className="sm:hidden">~</span>$
                     </span>
-                    <span className="text-text">{line.content}</span>
+                    <span className="text-text break-all">{line.content}</span>
                   </div>
                 ) : line.type === "error" ? (
                   <div className="text-accent whitespace-pre-wrap">
@@ -156,8 +157,9 @@ export default function Terminal() {
 
             {/* Input line */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-secondary shrink-0">
-                edo@cloudstack:~$
+              <span className="text-secondary shrink-0 text-[11px] sm:text-sm">
+                <span className="hidden sm:inline">edo@cloudstack:~</span>
+                <span className="sm:hidden">~</span>$
               </span>
               <input
                 ref={inputRef}

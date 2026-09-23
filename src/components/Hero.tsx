@@ -125,9 +125,9 @@ export default function Hero() {
         className="relative z-10 max-w-6xl mx-auto w-full"
       >
         {/* ══════════════════════════════════════════════════
-            BLOCK 1 — Avatar + Name (original, untouched)
+            BLOCK 1 — Avatar + Name
         ══════════════════════════════════════════════════ */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mb-2">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -140,7 +140,7 @@ export default function Hero() {
               width={128}
               height={128}
               priority
-              className="rounded-full w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-cover"
+              className="rounded-full w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-cover"
             />
             <div
               className="absolute inset-0 rounded-full pointer-events-none opacity-20"
@@ -151,14 +151,14 @@ export default function Hero() {
             />
           </motion.div>
 
-          <div>
-            <h1 className="font-mono text-4xl sm:text-5xl md:text-7xl font-bold text-text">
+          <div className="min-w-0">
+            <h1 className="font-mono text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-text leading-tight break-words">
               Mohamed{" "}
               <span className="text-primary">ELKHANFAF</span>
             </h1>
-            <p className="font-mono text-xl sm:text-2xl text-muted mt-3 flex items-center gap-1">
+            <p className="font-mono text-sm sm:text-xl md:text-2xl text-muted mt-2 sm:mt-3 flex items-center gap-1 flex-wrap">
               <span className="text-secondary">$</span> Cloud &amp; DevOps Engineer
-              <span className="inline-block w-2.5 h-5 bg-primary cursor-blink" />
+              <span className="inline-block w-2.5 h-4 sm:h-5 bg-primary cursor-blink" />
             </p>
           </div>
         </div>
@@ -205,19 +205,19 @@ export default function Hero() {
               transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
             />
 
-            <div className="relative z-10 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-8 sm:gap-12">
+            <div className="relative z-10 p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-12">
 
               {/* ── Badge column ── */}
               <div
                 className="relative shrink-0 flex items-center justify-center"
-                style={{ width: 220, height: 220 }}
+                style={{ width: 240, height: 240 }}
               >
                 {/* Deep ambient radial glow */}
                 <div
                   className="absolute pointer-events-none"
                   style={{
-                    width: 300,
-                    height: 300,
+                    width: 320,
+                    height: 320,
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
@@ -395,12 +395,12 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-10 flex flex-wrap gap-4"
+          className="mt-8 sm:mt-10 flex flex-col xs:flex-row flex-wrap gap-3 sm:gap-4"
         >
           <a
             href="#projects"
-            className="group font-mono text-sm border border-primary/50 text-primary px-5 py-2.5 rounded
-                       hover:bg-primary/10 transition-all duration-300 hover:border-primary"
+            className="group font-mono text-xs sm:text-sm border border-primary/50 text-primary px-4 sm:px-5 py-2.5 rounded
+                       hover:bg-primary/10 transition-all duration-300 hover:border-primary text-center"
           >
             <span className="text-muted group-hover:text-primary">$</span>{" "}
             ./view_projects.sh
@@ -408,16 +408,16 @@ export default function Hero() {
           <a
             href="/resume.pdf"
             download
-            className="group font-mono text-sm border border-secondary/50 text-secondary px-5 py-2.5 rounded
-                       hover:bg-secondary/10 transition-all duration-300 hover:border-secondary"
+            className="group font-mono text-xs sm:text-sm border border-secondary/50 text-secondary px-4 sm:px-5 py-2.5 rounded
+                       hover:bg-secondary/10 transition-all duration-300 hover:border-secondary text-center"
           >
             <span className="text-muted group-hover:text-secondary">$</span>{" "}
             cat resume.pdf
           </a>
           <a
             href="#contact"
-            className="group font-mono text-sm border border-accent/50 text-accent px-5 py-2.5 rounded
-                       hover:bg-accent/10 transition-all duration-300 hover:border-accent"
+            className="group font-mono text-xs sm:text-sm border border-accent/50 text-accent px-4 sm:px-5 py-2.5 rounded
+                       hover:bg-accent/10 transition-all duration-300 hover:border-accent text-center"
           >
             <span className="text-muted group-hover:text-accent">$</span>{" "}
             ssh contact@edo.dev
