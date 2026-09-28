@@ -1,0 +1,506 @@
+================================================================================
+CLOUDSCALE - MEDIA & ANALYTICS PLATFORM
+Infrastructure as Code (IaC) Portfolio Project
+================================================================================
+
+PROJECT OVERVIEW
+----------------
+CloudScale is a cloud-native infrastructure project built entirely with
+Terraform on AWS. It demonstrates production-level architecture patterns
+including load balancing, auto-scaling, serverless computing, CDN delivery,
+managed databases, remote state management, and AI-powered image analysis —
+all defined as code.
+
+The project provisions a complete multi-tier architecture from scratch with
+a single "terraform apply" command, and tears it all down with "terraform destroy".
+
+
+================================================================================
+ARCHITECTURE DIAGRAM
+================================================================================
+
+                         Users (Global)
+                              |
+              +---------------+---------------+
+              |                               |
+        CloudFront CDN                   ALB (Application
+        (Static Assets)                  Load Balancer)
+              |                          HTTPS ready + HTTP->HTTPS redirect
+        S3 Bucket                             |
+        (Private, OAC)              +--------+--------+
+                                   |                  |
+                              EC2 (AZ-a)          EC2 (AZ-b)
+                              Auto Scaling Group (1-4 instances)
+                                        |
+                              +---------+---------+
+                              |                   |
+                         RDS PostgreSQL       DynamoDB
+                         (Private Subnet)    (Image Labels)
+                         NOT publicly accessible
+
+        S3 Upload Bucket --> Lambda --> Rekognition (AI) --> DynamoDB
+
+
+    Remote State: S3 (versioned, encrypted) + DynamoDB (locking)
+
+
+================================================================================
+COMPONENTS BREAKDOWN
+================================================================================
+
+1. NETWORKING (main.tf)
+-----------------------
+What: VPC + Internet Gateway + 2 Public Subnets + 2 Private Subnets + Route Tables
+
+- VPC (10.0.0.0/16): Isolated virtual network, the foundation of everything
+- Internet Gateway: Connects the VPC to the public internet
+- 2 Public Subnets: us-east-1a (10.0.0.0/24), us-east-1b (10.0.1.0/24)
+- 2 Private Subnets: us-east-1a (10.0.2.0/24), us-east-1b (10.0.3.0/24)
+- Route Table: Routes 0.0.0.0/0 (all internet traffic) through the IGW
+
+WHY separate public and private subnets?
+- Public subnets: for ALB and EC2 (needs to serve web traffic)
+- Private subnets: for RDS (database has no reason to be internet-facing)
+- RDS doesn't need outbound internet, so no NAT Gateway is required
+- This keeps costs at $0 for the private subnet layer
+
+Interview talking point:
+"I designed the network with proper tier separation. The database sits in
+private subnets with no internet route — it's only reachable from within the
+VPC. This eliminates an entire class of attacks without adding any cost,
+since RDS doesn't need outbound connectivity."
+
+
+2. SECURITY GROUPS (security_groups.tf)
+---------------------------------------
+What: Firewall rules for EC2 instances
+
+- SSH (port 22): Restricted to MY IP ONLY (principle of least privilege)
+- HTTP (port 80): Open to the world (serves web traffic via ALB)
+- HTTPS (port 443): Open to the world
+- Egress: All outbound allowed
+
+RDS Security Group (rds.tf):
+- Port 5432 from EC2 Security Group (SG-to-SG reference, not CIDR)
+- Port 5432 from VPC CIDR (for Lambda)
+- No public access whatsoever
+
+Interview talking point:
+"I use Security Group references instead of CIDR blocks where possible.
+The RDS SG allows port 5432 only from the EC2 security group — this means
+even if someone spins up a rogue instance in my VPC, it can't reach the
+database unless it's attached to the correct security group. It's defense
+in depth without complexity."
+
+
+3. LOAD BALANCER + AUTO SCALING (alb.tf)
+-----------------------------------------
+What: ALB distributes traffic, ASG manages instance count
+
+Application Load Balancer (ALB):
+- Internet-facing, listens on port 80 (and 443 when domain configured)
+- Distributes requests across healthy instances in both AZs
+- Has its own Security Group (allows 80 and 443 from anywhere)
+
+HTTPS Configuration (acm.tf):
+- ACM certificate with DNS validation (free)
+- When domain_name variable is set:
+  - HTTP listener redirects 301 -> HTTPS
+  - HTTPS listener with TLS 1.3 policy forwards to targets
+- When domain_name is empty: HTTP forwards directly (demo mode)
+
+Target Group:
+- Health checks: hits "/" every 30 seconds, expects HTTP 200
+- If an instance fails health checks 2x in a row -> marked unhealthy
+
+Launch Template:
+- Amazon Linux 2023 AMI
+- User data script installs Apache httpd on boot
+
+Auto Scaling Group:
+- Min: 1, Desired: 2, Max: 4 instances
+- Health check type: ELB (uses ALB health checks)
+- Grace period: 300 seconds
+- Spread across both AZs
+
+Interview talking point:
+"The HTTPS setup is conditional using Terraform count and dynamic blocks.
+Setting domain_name activates ACM certificate creation, switches the HTTP
+listener to a 301 redirect, and creates an HTTPS listener with a modern
+TLS 1.3 security policy. This pattern lets the infrastructure adapt to
+whether we're in demo mode or production without code changes."
+
+
+4. CDN + STATIC FRONTEND (cdn.tf)
+----------------------------------
+What: S3 bucket + CloudFront for global static asset delivery
+
+S3 Bucket:
+- Completely private (all public access blocked)
+- Named with account ID for global uniqueness
+- force_destroy = true (so terraform destroy works)
+
+CloudFront Origin Access Control (OAC):
+- Modern method for CloudFront to access private S3
+- Uses SigV4 signing for every request
+- Only this specific CloudFront distribution can read the bucket
+
+CloudFront Distribution:
+- Global edge network (200+ locations)
+- Redirects HTTP to HTTPS automatically
+- Default TTL 1 hour, max 24 hours
+- Serves index.html as root document
+
+Interview talking point:
+"I chose OAC over the legacy OAI pattern because it supports SigV4 signing,
+works with SSE-KMS encrypted buckets, and provides more granular access control.
+The bucket is zero-trust — even someone with the S3 URL can't access it directly."
+
+
+5. SERVERLESS AI PIPELINE (lambda.tf + dynamodb.tf + lambda/handler.py)
+------------------------------------------------------------------------
+What: Upload image -> Lambda triggers -> AI analyzes -> Results stored in DynamoDB
+
+The Flow:
+1. User uploads .jpg to S3 upload bucket
+2. S3 event notification triggers Lambda
+3. Lambda sends image to Amazon Rekognition
+4. Rekognition returns detected labels with confidence scores
+5. Lambda writes results to DynamoDB table
+6. Results are queryable by image key
+
+DynamoDB Table (cloudscale-image-labels):
+- Partition key: ImageKey (the S3 object key)
+- Stores: labels array, label names, bucket, processing metadata
+- PAY_PER_REQUEST billing (scales to zero, no base cost)
+
+IAM Policy (Least Privilege):
+- CloudWatch Logs: CreateLogGroup, CreateLogStream, PutLogEvents
+- S3: GetObject on upload bucket ONLY
+- Rekognition: DetectLabels ONLY
+- DynamoDB: PutItem, GetItem, Query on image_labels table ONLY
+
+Interview talking point:
+"The AI pipeline doesn't just detect labels — it persists results to DynamoDB,
+making them queryable for downstream applications. The IAM policy is scoped to
+the exact resources and actions needed. The Lambda can only read from its specific
+bucket, only call DetectLabels, and only write to its specific DynamoDB table.
+Even if the function were compromised, blast radius is minimal."
+
+
+6. MANAGED DATABASE (rds.tf)
+-----------------------------
+What: PostgreSQL 16.9 on RDS in private subnets
+
+Instance: db.t4g.micro (Graviton ARM, free tier eligible)
+Storage: 20GB with autoscaling up to 50GB
+Network: Private subnets only, NOT publicly accessible
+Access: Only from EC2 SG and VPC CIDR (Lambda)
+
+Key security decisions:
+- publicly_accessible = false (not reachable from internet)
+- Private subnet group (no internet route exists)
+- SG-to-SG references (not broad CIDR allowlists)
+- Password marked as sensitive in Terraform
+
+For local development access: use SSM Session Manager port forwarding:
+  aws ssm start-session --target <instance-id> \
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \
+    --parameters '{"host":["rds-endpoint"],"portNumber":["5432"],"localPortNumber":["5432"]}'
+
+Interview talking point:
+"The database is in a private subnet with no internet route and no public
+accessibility. Access is only possible from within the VPC — from EC2
+instances or Lambda. For local development, I'd use SSM port forwarding
+which provides authenticated, encrypted tunneling without opening any ports."
+
+
+7. REMOTE STATE (backend.tf)
+-----------------------------
+What: S3 + DynamoDB for Terraform state management
+
+S3 Bucket:
+- Versioned (can recover previous states)
+- Server-side encrypted (AES256)
+- All public access blocked
+- Named with account ID for uniqueness
+
+DynamoDB Table:
+- Used for state locking (prevents concurrent modifications)
+- PAY_PER_REQUEST (essentially free for state locks)
+- Hash key: LockID
+
+How to activate:
+1. Apply the resources: terraform apply
+2. Uncomment the backend block in backend.tf
+3. Run: terraform init -migrate-state
+4. Confirm migration
+
+Interview talking point:
+"I implemented remote state with S3 and DynamoDB locking from the start.
+The S3 bucket is versioned so we can recover if state gets corrupted, and
+DynamoDB locking prevents race conditions when multiple team members run
+Terraform simultaneously. The state file itself is encrypted at rest."
+
+
+================================================================================
+DESIGN DECISIONS & TRADEOFFS
+================================================================================
+
+1. PRIVATE SUBNETS FOR RDS, PUBLIC FOR COMPUTE
+   Decision: EC2/ALB in public subnets, RDS in private subnets
+   Rationale: Database has zero reason to be internet-accessible.
+              EC2 instances serve web traffic, so they need public access.
+              No NAT Gateway needed since RDS doesn't need outbound internet.
+   Cost impact: $0 additional (private subnets are free)
+
+2. CONDITIONAL HTTPS (ACM + ALB)
+   Decision: HTTPS infrastructure is defined but activated by domain_name variable
+   Rationale: Can't get ACM cert without a domain, but the code proves
+              I know how to set it up. Flip a variable and it's production-ready.
+   Interview angle: Shows Terraform conditional patterns (count, dynamic blocks)
+
+3. ALB + ASG OVER STANDALONE EC2
+   Decision: Auto-scaling group behind a load balancer
+   Benefit: Self-healing, elasticity, zero-downtime deployments
+   Cost: ALB ~$16/month base
+
+4. AI RESULTS IN DYNAMODB (not just CloudWatch logs)
+   Decision: Persist Rekognition results to a queryable store
+   Rationale: Makes the pipeline a real feature, not a tech demo.
+              Results can be queried by image key for downstream apps.
+   Cost: PAY_PER_REQUEST = essentially free at demo scale
+
+5. REMOTE STATE FROM DAY ONE
+   Decision: S3 + DynamoDB backend (not local state)
+   Rationale: Team collaboration, state locking, versioning, encryption.
+              This is the #1 most-asked Terraform interview question and
+              it's implemented, not just mentioned.
+
+6. NO NAT GATEWAY
+   Decision: No NAT Gateway for private subnets
+   Rationale: RDS doesn't need outbound internet. Saves ~$32/month per NAT.
+              If Lambda needed VPC access with outbound internet, would add NAT.
+   Production change: Add NAT if private compute needs outbound access.
+
+7. CLOUDFRONT OAC OVER PUBLIC S3
+   Decision: Private bucket + OAC
+   Benefit: Zero-trust, no direct bucket access possible
+   Industry standard: AWS's recommended approach since 2022
+
+
+================================================================================
+TERRAFORM CONCEPTS DEMONSTRATED
+================================================================================
+
+- Provider configuration (AWS provider with region variable)
+- Resource creation and dependencies
+- Variables (string, sensitive, with defaults)
+- Conditional resource creation (count with ternary)
+- Dynamic blocks (HTTPS redirect listener)
+- Outputs for important values
+- Data sources (aws_caller_identity, archive_file)
+- count meta-argument for creating multiple resources
+- cidrsubnet() function for subnet CIDR math
+- locals for computed values
+- depends_on for explicit dependency ordering
+- base64encode() for user_data
+- jsonencode() for IAM policies and bucket policies
+- Interpolation syntax ${var.name}
+- Splat expressions [*] for lists
+- for expressions in outputs
+- Remote backend configuration (S3 + DynamoDB)
+- State locking and versioning
+- terraform init / plan / apply / destroy workflow
+- terraform init -migrate-state for backend migration
+- Security Group references (SG-to-SG, not just CIDR)
+- Environment variables passed to Lambda
+- IAM least-privilege scoping
+
+
+================================================================================
+AWS SERVICES USED (15 SERVICES)
+================================================================================
+
+1.  VPC (Virtual Private Cloud) - Network isolation
+2.  EC2 (Elastic Compute Cloud) - Virtual servers via ASG
+3.  ALB (Application Load Balancer) - Traffic distribution
+4.  ASG (Auto Scaling Group) - Elasticity and self-healing
+5.  ACM (Certificate Manager) - Free TLS/SSL certificates
+6.  S3 (Simple Storage Service) - Object storage (3 buckets)
+7.  CloudFront - Global CDN
+8.  Lambda - Serverless compute
+9.  Rekognition - AI/ML image analysis
+10. DynamoDB - NoSQL database for AI results + state locking
+11. RDS (Relational Database Service) - Managed PostgreSQL
+12. IAM (Identity and Access Management) - Permissions
+13. Security Groups - Network firewalls
+14. CloudWatch (implicit) - Logging for Lambda
+15. KMS (implicit) - S3 server-side encryption
+
+
+================================================================================
+INTERVIEW QUESTIONS YOU MIGHT GET
+================================================================================
+
+Q: Why Terraform over CloudFormation?
+A: Terraform is cloud-agnostic (works with AWS, Azure, GCP), has a larger
+   community, better state management with remote backends, and HCL is more
+   readable than JSON/YAML. CloudFormation is AWS-only and tightly coupled.
+
+Q: How do you handle Terraform state in a team?
+A: I use an S3 backend with versioning and encryption, plus a DynamoDB table
+   for state locking. When someone runs terraform apply, DynamoDB creates a
+   lock entry that prevents concurrent modifications. Versioning lets us
+   recover if state gets corrupted. The state bucket itself is private and
+   encrypted at rest.
+
+Q: What happens if terraform apply fails halfway through?
+A: Terraform tracks state. Resources created successfully are in the state file.
+   Running apply again only creates what's missing. Terraform is idempotent.
+
+Q: How would you handle secrets in production?
+A: Use AWS Secrets Manager or HashiCorp Vault. Reference them with data sources.
+   Never store secrets in .tfvars or source control. Use TF_VAR_ environment
+   variables in CI/CD pipelines.
+
+Q: Why is your database in a private subnet?
+A: The database has no legitimate reason to be internet-accessible. Putting it
+   in a private subnet eliminates the entire attack surface of direct internet
+   connections. Access is only possible from within the VPC through security
+   group rules. For local dev, I use SSM port forwarding.
+
+Q: What's the difference between Security Groups and NACLs?
+A: Security Groups are stateful (return traffic auto-allowed), instance-level,
+   allow-only rules. NACLs are stateless, subnet-level, support allow AND deny.
+   I use SGs for application-level control and would add NACLs for defense-in-depth.
+
+Q: Why multi-AZ?
+A: Availability zones are physically separate data centers. If one has a failure,
+   the other keeps running. My ALB routes traffic only to healthy instances in
+   available AZs. RDS can failover between AZs in production (Multi-AZ mode).
+
+Q: How does auto-scaling work here?
+A: The ASG monitors instance health via ALB health checks. If an instance fails
+   two consecutive checks, it's terminated and replaced. The group maintains
+   desired capacity (2) and can scale from 1 to 4 based on demand.
+
+Q: Explain the Lambda trigger flow.
+A: S3 has an event notification for ObjectCreated on .jpg files. When a file
+   lands, S3 invokes Lambda asynchronously with the bucket/key in the event.
+   Lambda reads the image, sends it to Rekognition, gets labels back, and
+   stores the results in DynamoDB for downstream querying.
+
+Q: Why store results in DynamoDB instead of just logging?
+A: CloudWatch logs are for debugging, not for application data. DynamoDB makes
+   the results queryable — a frontend could display detected labels, search by
+   label, or build analytics. It turns a tech demo into a real feature.
+
+Q: Why OAC instead of OAI for CloudFront?
+A: OAI is legacy. OAC supports SigV4 signing, works with SSE-KMS encrypted
+   buckets, and provides more granular access control. AWS recommends OAC
+   for all new distributions.
+
+Q: How is HTTPS configured?
+A: ACM provides free certificates with DNS validation. The ALB has conditional
+   HTTPS: when a domain is configured, HTTP returns a 301 redirect to HTTPS,
+   and a separate HTTPS listener with TLS 1.3 policy handles secure traffic.
+   It's a zero-cost security improvement.
+
+Q: What would you add for production?
+A:
+   - WAF in front of ALB and CloudFront
+   - Route 53 for custom domain + DNS failover
+   - Multi-AZ RDS with read replicas
+   - VPC Flow Logs for network monitoring
+   - CloudTrail for API audit logging
+   - CI/CD pipeline (GitHub Actions + terraform plan in PRs)
+   - Monitoring: CloudWatch Alarms + SNS notifications
+   - Auto-scaling policies (CPU/request-based, not just health)
+   - Lambda Dead Letter Queue for failed invocations
+   - S3 lifecycle policies for cost optimization
+
+
+================================================================================
+COST BREAKDOWN (APPROXIMATE)
+================================================================================
+
+Resource                    Monthly Cost (USD)
+---------------------------------------------------
+EC2 t3.micro x2 (ASG)      $0 (free tier 750hrs)
+ALB                         ~$16 + $0.008/LCU-hr
+RDS db.t4g.micro            $0 (free tier 750hrs)
+S3 storage (3 buckets)      ~$0.023/GB
+CloudFront                  ~$0.085/GB transfer
+Lambda                      $0 (free tier 1M requests)
+DynamoDB                    $0 (PAY_PER_REQUEST, minimal use)
+ACM certificate             $0 (free)
+---------------------------------------------------
+TOTAL (free tier active)    ~$16-20/month
+TOTAL (after free tier)     ~$45-55/month
+
+To avoid charges: run "terraform destroy" when not demonstrating.
+
+
+================================================================================
+COMMANDS CHEAT SHEET
+================================================================================
+
+terraform init                  Download providers, initialize backend
+terraform plan                  Preview changes (dry run)
+terraform apply                 Create/update infrastructure
+terraform destroy               Tear down everything
+terraform output                Show output values
+terraform state list            List all managed resources
+terraform state show <resource> Show details of a resource
+terraform fmt                   Auto-format .tf files
+terraform validate              Check syntax without calling AWS
+terraform init -migrate-state   Switch to remote backend
+
+aws s3 cp file.jpg s3://bucket/              Upload to S3
+aws s3 ls s3://bucket/                       List bucket contents
+aws logs tail /aws/lambda/function-name      View Lambda logs
+aws dynamodb scan --table-name table         Read DynamoDB items
+aws sts get-caller-identity                  Verify AWS auth
+
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+
+CloudScale/
+├── main.tf              # VPC, IGW, public + private subnets, route tables
+├── security_groups.tf   # Security Group for EC2 instances
+├── keypair.tf           # SSH key pair for instance access
+├── alb.tf               # ALB, Target Group, HTTPS listeners, Launch Template, ASG
+├── acm.tf               # ACM certificate (conditional on domain_name)
+├── cdn.tf               # S3 frontend bucket + CloudFront CDN
+├── lambda.tf            # S3 upload bucket + Lambda + IAM + S3 triggers
+├── dynamodb.tf          # DynamoDB table for Rekognition results
+├── rds.tf               # PostgreSQL RDS in private subnets
+├── backend.tf           # Remote state (S3 + DynamoDB locking)
+├── lambda/
+│   └── handler.py       # Python: Rekognition analysis -> DynamoDB storage
+├── variables.tf         # Input variable definitions
+├── outputs.tf           # Output values (URLs, endpoints, IDs)
+├── terraform.tfvars     # Actual values (DO NOT commit to git)
+├── .terraform.lock.hcl  # Provider version lock file
+└── .terraform/          # Downloaded providers (gitignored)
+
+
+================================================================================
+SECURITY POSTURE SUMMARY
+================================================================================
+
+- RDS: Private subnet, not publicly accessible, SG-to-SG access only
+- S3 buckets: All public access blocked (3 buckets)
+- CloudFront: OAC with SigV4 signing, bucket policy scoped to distribution ARN
+- SSH: Locked to single IP address
+- IAM Lambda role: Least privilege (specific actions on specific resources)
+- State file: Encrypted at rest, versioned, private bucket
+- HTTPS: Ready to activate with ACM (free cert, TLS 1.3)
+- Passwords: Marked sensitive, never shown in terraform output
+- State locking: DynamoDB prevents concurrent state corruption
+
+
+================================================================================

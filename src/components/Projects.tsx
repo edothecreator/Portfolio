@@ -2,199 +2,49 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Image from "next/image";
 
-/* ─── CloudScale terminal mockup ─────────────────────────────────── */
-function CloudScaleMockup() {
-  const tfLines = [
-    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_vpc" "main"             {}' },
-    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_subnet" "public"         {}' },
-    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_subnet" "private"        {}' },
-    { prefix: "  +",  color: "text-secondary", text: ' resource "aws_db_instance" "postgres"  {}' },
-  ];
-
-  return (
-    <div className="bg-[#0d1117] border-b border-border/50 overflow-hidden">
-      {/* Window chrome */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-border/40">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-        <span className="font-mono text-[10px] text-muted ml-2">terraform plan — cloudscale</span>
-        {/* Status badge */}
-        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] font-semibold text-secondary">
-          <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active" />
-          DEPLOYED
-        </span>
-      </div>
-
-      <div className="p-3 sm:p-4 font-mono text-[10px] sm:text-[11px] leading-relaxed space-y-0.5 overflow-hidden">
-        <p className="text-muted">$ terraform plan -out=tfplan</p>
-        <p className="text-muted/50 h-2" />
-        <p className="text-text/70">Terraform will perform the following actions:</p>
-        <p className="text-muted/50 h-1" />
-        {tfLines.map((l, i) => (
-          <p key={i} className="truncate">
-            <span className={`${l.color} font-bold`}>{l.prefix}</span>
-            <span className="text-text/80">{l.text}</span>
-          </p>
-        ))}
-        <p className="text-muted/50 h-1" />
-        <p>
-          <span className="text-secondary font-bold">Plan:</span>
-          <span className="text-text/70"> 15 to add, 0 to change, 0 to destroy.</span>
-        </p>
-      </div>
-
-      {/* AZ topology strip */}
-      <div className="mx-3 sm:mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-2 sm:p-3">
-        <p className="font-mono text-[9px] text-muted mb-2 uppercase tracking-widest">
-          Network Topology — 2 AZs
-        </p>
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
-          {["AZ-1a", "AZ-1b"].map((az) => (
-            <div key={az} className="border border-border/30 rounded p-1.5 sm:p-2 bg-bg/60">
-              <p className="font-mono text-[8px] sm:text-[9px] text-primary mb-1">{az}</p>
-              <p className="font-mono text-[8px] sm:text-[9px] text-muted">public</p>
-              <p className="font-mono text-[8px] sm:text-[9px] text-muted">private</p>
-              <p className="font-mono text-[8px] sm:text-[9px] text-muted">db</p>
-            </div>
-          ))}
-          <div className="border border-secondary/20 rounded p-1.5 sm:p-2 bg-secondary/5">
-            <p className="font-mono text-[8px] sm:text-[9px] text-secondary mb-1">Cost</p>
-            <p className="font-mono text-[8px] sm:text-[9px] text-text">−$65/mo</p>
-            <p className="font-mono text-[8px] sm:text-[9px] text-muted">no NAT</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── PitchOps terminal mockup ───────────────────────────────────── */
-function PitchOpsMockup() {
-  const stages = [
-    { name: "build",   status: "passed",   color: "text-secondary", dot: "bg-secondary" },
-    { name: "test",    status: "passed",   color: "text-secondary", dot: "bg-secondary" },
-    { name: "scan",    status: "passed",   color: "text-secondary", dot: "bg-secondary" },
-    { name: "push",    status: "passed",   color: "text-secondary", dot: "bg-secondary" },
-    { name: "deploy",  status: "passed",   color: "text-secondary", dot: "bg-secondary" },
-  ];
-
-  const containers = [
-    { name: "frontend",  image: "next:alpine",    port: "3000", status: "Up" },
-    { name: "backend",   image: "python:3.11",    port: "8000", status: "Up" },
-    { name: "nginx",     image: "nginx:alpine",   port: "80",   status: "Up" },
-  ];
-
-  return (
-    <div className="bg-[#0d1117] border-b border-border/50 overflow-hidden">
-      {/* Window chrome */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-border/40">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-        <span className="font-mono text-[10px] text-muted ml-2">gitlab-ci — pitchops · main</span>
-        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] font-semibold text-secondary">
-          <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active" />
-          DEPLOYED
-        </span>
-      </div>
-
-      {/* Pipeline stages */}
-      <div className="px-4 pt-3 pb-2">
-        <p className="font-mono text-[9px] text-muted uppercase tracking-widest mb-2">
-          Pipeline · #47 · triggered by push to main
-        </p>
-        <div className="flex items-center gap-1 flex-wrap">
-          {stages.map((s, i) => (
-            <div key={s.name} className="flex items-center gap-1">
-              <div className="flex items-center gap-1.5 border border-secondary/20 rounded px-2 py-1 bg-secondary/5">
-                <span className={`w-1.5 h-1.5 rounded-full ${s.dot} status-active`} />
-                <span className={`font-mono text-[9px] ${s.color}`}>{s.name}</span>
-              </div>
-              {i < stages.length - 1 && (
-                <span className="font-mono text-[9px] text-muted/40">→</span>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Trivy scan output */}
-        <div className="mt-2 font-mono text-[10px] space-y-0.5">
-          <p>
-            <span className="text-accent">▶</span>
-            <span className="text-text/70"> trivy image scan </span>
-            <span className="text-secondary">✓ 0 HIGH · 0 CRITICAL</span>
-          </p>
-          <p>
-            <span className="text-accent">▶</span>
-            <span className="text-text/70"> docker push → ECR </span>
-            <span className="text-primary">sha256:a3f9…</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Container topology */}
-      <div className="mx-3 sm:mx-4 mb-4 border border-border/40 rounded bg-surface/50 p-2 sm:p-3">
-        <p className="font-mono text-[9px] text-muted mb-2 uppercase tracking-widest">
-          docker compose ps — EC2 production
-        </p>
-        <div className="space-y-1">
-          {containers.map((c) => (
-            <div key={c.name} className="flex items-center gap-2 sm:gap-3 font-mono text-[9px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active shrink-0" />
-              <span className="text-primary w-16 sm:w-20 shrink-0">{c.name}</span>
-              <span className="text-muted/70 flex-1 truncate">{c.image}</span>
-              <span className="text-text/60 shrink-0">:{c.port}</span>
-              <span className="text-secondary shrink-0">{c.status}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Project card ───────────────────────────────────────────────── */
+/* ─── Types ──────────────────────────────────────────────────────── */
 interface ProjectData {
   name: string;
   codename: string;
   description: string;
   stack: string[];
-  links: { label: string; url: string }[];
+  links: { label: string; url: string; accent?: boolean }[];
   command: string;
-  mockup: React.ReactNode;
+  archImage: string;
 }
 
+/* ─── Project data ───────────────────────────────────────────────── */
 const projects: ProjectData[] = [
-  {
-    name: "CloudScale",
-    codename: "cloudscale",
-    description:
-      "Production-ready 15-service AWS infrastructure entirely automated via Terraform with remote S3/DynamoDB state locking. Architected secure private subnets for RDS without NAT Gateways, cutting cloud costs by $65/month. Integrated an event-driven serverless AI pipeline (S3 → Lambda → Rekognition → DynamoDB).",
-    stack: ["AWS", "Terraform", "Lambda", "S3", "DynamoDB", "RDS", "Rekognition"],
-    links: [
-      { label: "GitHub",              url: "https://github.com/edothecreator" },
-      { label: "Architecture Diagram", url: "#" },
-    ],
-    command: "$ terraform apply",
-    mockup: <CloudScaleMockup />,
-  },
   {
     name: "PitchOps",
     codename: "pitchops",
     description:
-      "Containerized multi-service football analytics platform running on a hardened Linux server. Automated the entire SDLC using GitLab CI/CD pipelines for automated testing, Docker multi-stage builds, and Trivy security scans pushing to Amazon ECR. Paired a static Next.js frontend (S3/CloudFront) with a containerized backend.",
-    stack: ["Docker", "GitLab CI/CD", "AWS", "EC2", "S3", "CloudFront", "Linux", "Next.js"],
+      "Containerized multi-service football analytics platform deployed on AWS with fully automated CI/CD. GitHub Actions pipelines handle build, Trivy security scanning, and deploy. Static Next.js frontend on S3/CloudFront, FastAPI backend on EC2 behind Nginx with Let's Encrypt SSL. OIDC federation — zero long-lived credentials in CI/CD.",
+    stack: ["AWS", "GitHub Actions", "Docker", "Next.js", "FastAPI", "CloudFront", "EC2", "Nginx", "Let's Encrypt", "OIDC"],
     links: [
-      { label: "GitHub",        url: "https://github.com/edothecreator" },
-      { label: "Pipeline Logs", url: "#" },
+      { label: "GitHub ↗", url: "https://github.com/edothecreator/PitchOps" },
+      { label: "Live ↗",   url: "https://pitchopsss.xyz", accent: true },
     ],
     command: "$ docker compose up -d",
-    mockup: <PitchOpsMockup />,
+    archImage: "/pitchops-arch.png",
+  },
+  {
+    name: "CloudScale",
+    codename: "cloudscale",
+    description:
+      "Production-ready 15-service AWS infrastructure entirely automated via Terraform. Multi-AZ high availability with ALB + ASG, serverless AI pipeline (S3 → Lambda → Rekognition → DynamoDB), RDS in private subnets with no NAT Gateway (saves $65/month), and remote state with S3 + DynamoDB locking.",
+    stack: ["AWS", "Terraform", "Lambda", "S3", "DynamoDB", "RDS", "Rekognition", "CloudFront", "EC2", "IAM"],
+    links: [
+      { label: "GitHub ↗", url: "https://github.com/edothecreator/CloudScale" },
+    ],
+    command: "$ terraform apply",
+    archImage: "/cloudscale-arch.png",
   },
 ];
 
+/* ─── Project card ───────────────────────────────────────────────── */
 function ProjectCard({ project, index }: { project: ProjectData; index: number }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
@@ -213,19 +63,53 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
         <div className="deploy-bar h-full bg-gradient-to-r from-primary via-secondary to-primary w-0" />
       </div>
 
-      {/* Terminal mockup */}
-      {project.mockup}
+      {/* ── Thumbnail with hover overlay ── */}
+      <div className="relative overflow-hidden">
+        {/* Architecture diagram image */}
+        <Image
+          src={project.archImage}
+          alt={`${project.name} architecture diagram`}
+          width={800}
+          height={450}
+          className="w-full h-72 sm:h-80 md:h-96 object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
 
-      {/* Card body */}
+        {/* Dark overlay + action buttons on hover */}
+        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100
+                        transition-opacity duration-200 flex items-center justify-center gap-3">
+          {project.links.map((link) => (
+            <a
+              key={link.label}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className={
+                link.accent
+                  ? "font-mono text-sm font-medium px-4 py-2 rounded-lg bg-primary text-bg hover:bg-primary/80 transition-colors duration-150"
+                  : "font-mono text-sm px-4 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-colors duration-150"
+              }
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+
+        {/* Status badge */}
+        <div className="absolute top-3 right-3">
+          <span className="flex items-center gap-1.5 font-mono text-[10px] font-semibold
+                           px-2 py-0.5 rounded bg-bg/80 backdrop-blur-sm border border-border/50 text-secondary">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active" />
+            DEPLOYED
+          </span>
+        </div>
+      </div>
+
+      {/* ── Card body ── */}
       <div className="p-5 sm:p-6 flex flex-col flex-1">
-        {/* Header */}
         <div className="mb-3">
-          <h3 className="font-mono text-base font-semibold text-text">
-            {project.name}
-          </h3>
-          <p className="font-mono text-[11px] text-muted mt-0.5">
-            ~/{project.codename}
-          </p>
+          <h3 className="font-mono text-base font-semibold text-text">{project.name}</h3>
+          <p className="font-mono text-[11px] text-muted mt-0.5">~/{project.codename}</p>
         </div>
 
         {/* Stack chips */}
@@ -256,7 +140,7 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
               rel="noopener noreferrer"
               className="font-mono text-xs text-muted hover:text-primary transition-colors duration-200"
             >
-              [{link.label}]
+              [{link.label.replace(" ↗", "")}]
             </a>
           ))}
           <span className="hidden sm:inline font-mono text-[10px] text-muted/40 ml-auto">

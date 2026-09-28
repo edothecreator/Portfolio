@@ -340,6 +340,24 @@ export default function Hero() {
                   ))}
                 </motion.div>
 
+                {/* Cert dates */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.05, duration: 0.5 }}
+                  className="flex flex-wrap gap-3 justify-center sm:justify-start"
+                >
+                  <span className="font-mono text-[10px] text-muted">
+                    <span className="text-muted/50">Issued:</span>{" "}
+                    <span className="text-secondary">Sep 21, 2026</span>
+                  </span>
+                  <span className="text-muted/30 font-mono text-[10px]">·</span>
+                  <span className="font-mono text-[10px] text-muted">
+                    <span className="text-muted/50">Expires:</span>{" "}
+                    <span className="text-accent">Sep 21, 2029</span>
+                  </span>
+                </motion.div>
+
                 {/* Credly CTA */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -347,7 +365,7 @@ export default function Hero() {
                   transition={{ delay: 1.15, duration: 0.5 }}
                 >
                   <motion.a
-                    href="https://www.credly.com/org/amazon-web-services/badge/aws-certified-solutions-architect-associate"
+                    href="https://www.credly.com/badges/871c796a-a1cf-4b95-b476-2167e570c910/linked_in?t=tlqfdd"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="cta-glow inline-flex items-center gap-2 font-mono text-sm font-semibold
