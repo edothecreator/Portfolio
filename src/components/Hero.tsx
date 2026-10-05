@@ -23,6 +23,7 @@ function OrbitRing({
   opacity = 0.3,
   reverse = false,
   duration = 12,
+  reduced = false,
 }: {
   radius: number;
   dashArray: string;
@@ -30,6 +31,7 @@ function OrbitRing({
   opacity?: number;
   reverse?: boolean;
   duration?: number;
+  reduced?: boolean;
 }) {
   const size = radius * 2 + 8;
   return (
@@ -44,8 +46,8 @@ function OrbitRing({
         translateX: "-50%",
         translateY: "-50%",
       }}
-      animate={{ rotate: reverse ? -360 : 360 }}
-      transition={{ duration, repeat: Infinity, ease: "linear" }}
+      animate={reduced ? undefined : { rotate: reverse ? -360 : 360 }}
+      transition={reduced ? undefined : { duration, repeat: Infinity, ease: "linear" }}
     >
       <circle
         cx={size / 2}
@@ -71,7 +73,8 @@ function OrbitRing({
 }
 
 /* ─── Corner scan-line that sweeps the badge vertically ──────────── */
-function ScanLine() {
+function ScanLine({ reduced = false }: { reduced?: boolean }) {
+  if (reduced) return null;
   return (
     <motion.div
       className="absolute left-0 right-0 h-px pointer-events-none z-20"
@@ -135,7 +138,7 @@ export default function Hero() {
             className="relative shrink-0"
           >
             <Image
-              src="/pfp.jpg"
+              src="/profile.jpg"
               alt="Mohamed ELKHANFAF"
               width={128}
               height={128}
@@ -152,7 +155,7 @@ export default function Hero() {
           </motion.div>
 
           <div className="min-w-0">
-            <h1 className="font-mono text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-text leading-tight break-words">
+            <h1 className="font-mono text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-text leading-tight break-words">
               Mohamed{" "}
               <span className="text-primary">ELKHANFAF</span>
             </h1>
@@ -160,11 +163,50 @@ export default function Hero() {
               <span className="text-secondary">$</span> Cloud &amp; DevOps Engineer
               <span className="inline-block w-2.5 h-4 sm:h-5 bg-primary cursor-blink" />
             </p>
+            <p className="font-mono text-xs sm:text-sm md:text-base text-muted mt-2 sm:mt-3">
+              <span className="text-secondary">#</span> ships AWS infra with Terraform, Docker &amp; CI/CD — AWS SAA certified
+            </p>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════════════
-            BLOCK 2 — AWS SAA Achievement Card
+            BLOCK 2 — CTA Buttons
+        ══════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mt-6 sm:mt-8 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4"
+        >
+          <a
+            href="#projects"
+            className="group font-mono text-xs sm:text-sm border border-primary/50 text-primary px-4 sm:px-5 py-2.5 rounded
+                       hover:bg-primary/10 transition-all duration-300 hover:border-primary text-center"
+          >
+            <span className="text-muted group-hover:text-primary">$</span>{" "}
+            ./view_projects.sh
+          </a>
+          <a
+            href="/resume.pdf"
+            download
+            className="group font-mono text-xs sm:text-sm border border-secondary/50 text-secondary px-4 sm:px-5 py-2.5 rounded
+                       hover:bg-secondary/10 transition-all duration-300 hover:border-secondary text-center"
+          >
+            <span className="text-muted group-hover:text-secondary">$</span>{" "}
+            cat resume.pdf
+          </a>
+          <a
+            href="#contact"
+            className="group font-mono text-xs sm:text-sm border border-accent/50 text-accent px-4 sm:px-5 py-2.5 rounded
+                       hover:bg-accent/10 transition-all duration-300 hover:border-accent text-center"
+          >
+            <span className="text-muted group-hover:text-accent">$</span>{" "}
+            ssh edo@cloudstack.dev
+          </a>
+        </motion.div>
+
+        {/* ══════════════════════════════════════════════════
+            BLOCK 3 — AWS SAA Achievement Card
         ══════════════════════════════════════════════════ */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -208,10 +250,12 @@ export default function Hero() {
             <div className="relative z-10 p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-12">
 
               {/* ── Badge column ── */}
-              <div
-                className="relative shrink-0 flex items-center justify-center"
-                style={{ width: 240, height: 240 }}
-              >
+              <div className="relative shrink-0 flex items-center justify-center w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
+                {/* Glow + orbits share one wrapper, scaled down on small screens (200/240) */}
+                <div
+                  className="absolute inset-0 pointer-events-none scale-[0.8333] sm:scale-100"
+                  aria-hidden="true"
+                >
                 {/* Deep ambient radial glow */}
                 <div
                   className="absolute pointer-events-none"
@@ -228,9 +272,10 @@ export default function Hero() {
                 />
 
                 {/* Orbit rings */}
-                <OrbitRing radius={124} dashArray="6 10"  color="#00d4ff" opacity={0.28} duration={14} />
-                <OrbitRing radius={138} dashArray="2 14"  color="#3B5FC0" opacity={0.2}  reverse duration={22} />
-                <OrbitRing radius={112} dashArray="10 6"  color="#7fff6e" opacity={0.18} duration={9} />
+                <OrbitRing radius={124} dashArray="6 10"  color="#00d4ff" opacity={0.28} duration={14} reduced={!!prefersReduced} />
+                <OrbitRing radius={138} dashArray="2 14"  color="#3B5FC0" opacity={0.2}  reverse duration={22} reduced={!!prefersReduced} />
+                <OrbitRing radius={112} dashArray="10 6"  color="#7fff6e" opacity={0.18} duration={9} reduced={!!prefersReduced} />
+                </div>
 
                 {/* Particles */}
                 {!prefersReduced && PARTICLES.map((p, i) => (
@@ -274,7 +319,7 @@ export default function Hero() {
                     className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] drop-shadow-2xl select-none"
                   />
                   {/* Scan line over badge */}
-                  <ScanLine />
+                  <ScanLine reduced={!!prefersReduced} />
                 </motion.div>
               </div>
 
@@ -286,7 +331,7 @@ export default function Hero() {
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7, duration: 0.5 }}
-                  className="font-mono text-[10px] text-muted uppercase tracking-[0.2em]"
+                  className="font-mono text-2xs text-muted uppercase tracking-[0.2em]"
                 >
                   <span className="text-secondary">✓</span>&nbsp; Verified Certification
                 </motion.p>
@@ -332,9 +377,9 @@ export default function Hero() {
                   ].map((item) => (
                     <span
                       key={item.label}
-                      className="font-mono text-[10px] px-2.5 py-1 bg-border/40 text-muted rounded border border-border/60"
+                      className="font-mono text-2xs px-2.5 py-1 bg-border/40 text-muted rounded border border-border/60"
                     >
-                      <span className="text-muted/50">{item.label}:</span>{" "}
+                      <span className="text-muted">{item.label}:</span>{" "}
                       <span className="text-text">{item.value}</span>
                     </span>
                   ))}
@@ -347,13 +392,13 @@ export default function Hero() {
                   transition={{ delay: 1.05, duration: 0.5 }}
                   className="flex flex-wrap gap-3 justify-center sm:justify-start"
                 >
-                  <span className="font-mono text-[10px] text-muted">
-                    <span className="text-muted/50">Issued:</span>{" "}
+                  <span className="font-mono text-2xs text-muted">
+                    <span className="text-muted">Issued:</span>{" "}
                     <span className="text-secondary">Sep 21, 2026</span>
                   </span>
-                  <span className="text-muted/30 font-mono text-[10px]">·</span>
-                  <span className="font-mono text-[10px] text-muted">
-                    <span className="text-muted/50">Expires:</span>{" "}
+                  <span className="text-muted font-mono text-2xs" aria-hidden="true">·</span>
+                  <span className="font-mono text-2xs text-muted">
+                    <span className="text-muted">Expires:</span>{" "}
                     <span className="text-accent">Sep 21, 2029</span>
                   </span>
                 </motion.div>
@@ -401,45 +446,9 @@ export default function Hero() {
 
             {/* Corner label */}
             <div className="absolute top-4 right-4 pointer-events-none">
-              <span className="font-mono text-[10px] text-muted/40">aws_saa-c03</span>
+              <span className="font-mono text-2xs text-muted">aws_saa-c03</span>
             </div>
           </div>
-        </motion.div>
-
-        {/* ══════════════════════════════════════════════════
-            BLOCK 3 — CTA Buttons (original, untouched)
-        ══════════════════════════════════════════════════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-8 sm:mt-10 flex flex-col xs:flex-row flex-wrap gap-3 sm:gap-4"
-        >
-          <a
-            href="#projects"
-            className="group font-mono text-xs sm:text-sm border border-primary/50 text-primary px-4 sm:px-5 py-2.5 rounded
-                       hover:bg-primary/10 transition-all duration-300 hover:border-primary text-center"
-          >
-            <span className="text-muted group-hover:text-primary">$</span>{" "}
-            ./view_projects.sh
-          </a>
-          <a
-            href="/resume.pdf"
-            download
-            className="group font-mono text-xs sm:text-sm border border-secondary/50 text-secondary px-4 sm:px-5 py-2.5 rounded
-                       hover:bg-secondary/10 transition-all duration-300 hover:border-secondary text-center"
-          >
-            <span className="text-muted group-hover:text-secondary">$</span>{" "}
-            cat resume.pdf
-          </a>
-          <a
-            href="#contact"
-            className="group font-mono text-xs sm:text-sm border border-accent/50 text-accent px-4 sm:px-5 py-2.5 rounded
-                       hover:bg-accent/10 transition-all duration-300 hover:border-accent text-center"
-          >
-            <span className="text-muted group-hover:text-accent">$</span>{" "}
-            ssh contact@edo.dev
-          </a>
         </motion.div>
       </motion.div>
     </section>

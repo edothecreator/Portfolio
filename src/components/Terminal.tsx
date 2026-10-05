@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+import SectionHeader from "@/components/SectionHeader";
 
 interface TerminalLine {
   type: "input" | "output" | "error";
@@ -10,15 +11,16 @@ interface TerminalLine {
 
 const commands: Record<string, string> = {
   whoami: `Edo — 4th year Networks & Systems Engineering @ FSTG Marrakech
-Cloud/DevOps obsessed. Building toward AWS SAA + Terraform Associate.
-Targeting PFE internship at top tech companies.`,
+Cloud/DevOps engineer · AWS Certified Solutions Architect – Associate (SAA-C03) ✓
+Next up: Terraform Associate. Targeting PFE internship at top tech companies.`,
 
   "cat interests.txt": `☁️  Cloud Architecture   🐳 Containers   🔧 IaC
 ⚽  FC Barcelona fan     🎬 K-Dramas     🕵️ Detective Conan`,
 
-  "ls projects/": `vpc-lab/    zero-trust/    cineapi/    cinetrack/    edogawa-vintage/`,
+  "ls projects/": `pitchops/    cloudscale/    cinetrack/`,
 
-  "cat goals.txt": `→ Pass AWS SAA
+  "cat goals.txt": `✓ AWS Solutions Architect – Associate (SAA-C03) — earned
+→ Terraform Associate
 → Land PFE at OCP / CGI / Capgemini / Devoteam
 → Build CloudScale Media Platform
 → Remote work for EU/Gulf companies in 3-4 years`,
@@ -109,9 +111,7 @@ export default function Terminal() {
         transition={{ duration: 0.6 }}
         className="max-w-4xl mx-auto"
       >
-        <h2 className="font-mono text-lg text-muted mb-10">
-          <span className="text-secondary">#</span> TERMINAL_ABOUT
-        </h2>
+        <SectionHeader path="about" command="./terminal --interactive" title="About" />
 
         {/* Terminal window */}
         <div

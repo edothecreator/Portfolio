@@ -1,7 +1,9 @@
 "use client";
 
+export type ProjectThumbnailVariant = "vpc" | "zerotrust" | "cineapi" | "cinetrack";
+
 interface ProjectThumbnailProps {
-  variant: "vpc" | "zerotrust" | "cineapi" | "cinetrack";
+  variant: ProjectThumbnailVariant;
   className?: string;
 }
 
@@ -205,27 +207,20 @@ function CinetrackContent() {
 
       {/* Pipeline stages */}
       <text x="16" y="50" fontFamily="monospace" fontSize="8" fill="#e2e8f0">
-        Pipeline #847 — main
+        .gitlab-ci.yml — 6 stages
       </text>
 
-      {/* Stage boxes */}
-      <rect x="16" y="60" width="75" height="30" rx="3" fill="#1e3a5f" stroke="#7fff6e" strokeWidth="1" />
-      <text x="30" y="78" fontFamily="monospace" fontSize="8" fill="#7fff6e">✓ build</text>
-
-      <line x1="91" y1="75" x2="105" y2="75" stroke="#64748b" strokeWidth="1" />
-
-      <rect x="105" y="60" width="75" height="30" rx="3" fill="#1e3a5f" stroke="#7fff6e" strokeWidth="1" />
-      <text x="122" y="78" fontFamily="monospace" fontSize="8" fill="#7fff6e">✓ test</text>
-
-      <line x1="180" y1="75" x2="194" y2="75" stroke="#64748b" strokeWidth="1" />
-
-      <rect x="194" y="60" width="75" height="30" rx="3" fill="#1e3a5f" stroke="#7fff6e" strokeWidth="1" />
-      <text x="205" y="78" fontFamily="monospace" fontSize="8" fill="#7fff6e">✓ docker</text>
-
-      <line x1="269" y1="75" x2="283" y2="75" stroke="#64748b" strokeWidth="1" />
-
-      <rect x="283" y="60" width="75" height="30" rx="3" fill="#1e3a5f" stroke="#7fff6e" strokeWidth="1" />
-      <text x="295" y="78" fontFamily="monospace" fontSize="8" fill="#7fff6e">✓ deploy</text>
+      {/* Stage boxes: validate → build → test → security → docker → deploy */}
+      {["validate", "build", "test", "security", "docker", "deploy"].map((stage, i) => {
+        const x = 16 + i * 63;
+        return (
+          <g key={stage}>
+            <rect x={x} y="60" width="54" height="30" rx="3" fill="#1e3a5f" stroke="#7fff6e" strokeWidth="1" />
+            <text x={x + 5} y="78" fontFamily="monospace" fontSize="7" fill="#7fff6e">✓ {stage}</text>
+            {i < 5 && <line x1={x + 54} y1="75" x2={x + 63} y2="75" stroke="#64748b" strokeWidth="1" />}
+          </g>
+        );
+      })}
 
       {/* Deploy log */}
       <rect x="16" y="105" width="368" height="100" rx="3" fill="#0a0e1a" stroke="#1e3a5f" strokeWidth="1" />
@@ -234,18 +229,13 @@ function CinetrackContent() {
         Deploying to production...
       </text>
       <text x="26" y="152" fontFamily="monospace" fontSize="8" fill="#7fff6e">
-        ✓ Build completed in 34s
+        ✓ Next.js 16 build complete
       </text>
       <text x="26" y="167" fontFamily="monospace" fontSize="8" fill="#7fff6e">
-        ✓ Deployed to cinetrack.vercel.app
+        ✓ Deployed to Vercel + Supabase
       </text>
       <text x="26" y="182" fontFamily="monospace" fontSize="8" fill="#00d4ff">
-        ● Production ready — 0 errors
-      </text>
-
-      {/* Duration */}
-      <text x="300" y="122" fontFamily="monospace" fontSize="7" fill="#64748b">
-        Duration: 2m 14s
+        ● Production ready
       </text>
     </g>
   );

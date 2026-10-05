@@ -3,6 +3,8 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
+import ProjectThumbnail, { type ProjectThumbnailVariant } from "@/components/ProjectThumbnail";
+import SectionHeader from "@/components/SectionHeader";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 interface ProjectData {
@@ -12,7 +14,8 @@ interface ProjectData {
   stack: string[];
   links: { label: string; url: string; accent?: boolean }[];
   command: string;
-  archImage: string;
+  archImage?: string;
+  thumbnail?: ProjectThumbnailVariant; // generated SVG fallback used when archImage is absent
 }
 
 /* ─── Project data ───────────────────────────────────────────────── */
@@ -42,6 +45,20 @@ const projects: ProjectData[] = [
     command: "$ terraform apply",
     archImage: "/cloudscale-arch.png",
   },
+  {
+    name: "CineTrack",
+    codename: "cinetrack",
+    description:
+      "Full-stack social movie & TV tracking platform on Next.js 16 (App Router) and React 19, backed by PostgreSQL via Prisma on Supabase and deployed on Vercel. Six-stage GitLab CI/CD pipeline (validate → build → test → security → docker → deploy) with a multi-stage Docker image. JWT auth in HTTP-only cookies, server-side-only TMDB integration, and a Taste Match engine blending Jaccard, Pearson, and cosine similarity.",
+    stack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Prisma", "PostgreSQL", "Supabase", "Vercel", "GitLab CI", "Docker"],
+    links: [
+      { label: "GitHub ↗", url: "https://github.com/edothecreator/CineTrack" },
+      { label: "Live ↗",   url: "https://movie-tracker-five-theta.vercel.app", accent: true },
+    ],
+    command: "$ npx prisma migrate deploy",
+    // No architecture image yet — drop public/cinetrack-arch.png and add: archImage: "/cinetrack-arch.png",
+    thumbnail: "cinetrack",
+  },
 ];
 
 /* ─── Project card ───────────────────────────────────────────────── */
@@ -66,13 +83,19 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
       {/* ── Thumbnail with hover overlay ── */}
       <div className="relative overflow-hidden">
         {/* Architecture diagram image */}
-        <Image
-          src={project.archImage}
-          alt={`${project.name} architecture diagram`}
-          width={800}
-          height={450}
-          className="w-full h-72 sm:h-80 md:h-96 object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-        />
+        {project.archImage ? (
+          <Image
+            src={project.archImage}
+            alt={`${project.name} architecture diagram`}
+            width={800}
+            height={450}
+            className="w-full h-72 sm:h-80 md:h-96 object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+        ) : project.thumbnail ? (
+          <div className="w-full h-72 sm:h-80 md:h-96 bg-[#0d1117] flex items-center justify-center transition-transform duration-500 group-hover:scale-[1.03]">
+            <ProjectThumbnail variant={project.thumbnail} className="w-full h-full" />
+          </div>
+        ) : null}
 
         {/* Dark overlay + action buttons on hover */}
         <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100
@@ -97,7 +120,7 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
 
         {/* Status badge */}
         <div className="absolute top-3 right-3">
-          <span className="flex items-center gap-1.5 font-mono text-[10px] font-semibold
+          <span className="flex items-center gap-1.5 font-mono text-2xs font-semibold
                            px-2 py-0.5 rounded bg-bg/80 backdrop-blur-sm border border-border/50 text-secondary">
             <span className="w-1.5 h-1.5 rounded-full bg-secondary status-active" />
             DEPLOYED
@@ -117,7 +140,7 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
           {project.stack.map((tech) => (
             <span
               key={tech}
-              className="font-mono text-[10px] px-2 py-0.5 bg-border/50 text-muted rounded border border-border
+              className="font-mono text-2xs px-2 py-0.5 bg-border/50 text-muted rounded border border-border
                          hover:border-primary/40 hover:text-text transition-colors duration-200"
             >
               {tech}
@@ -143,7 +166,7 @@ function ProjectCard({ project, index }: { project: ProjectData; index: number }
               [{link.label.replace(" ↗", "")}]
             </a>
           ))}
-          <span className="hidden sm:inline font-mono text-[10px] text-muted/40 ml-auto">
+          <span className="hidden sm:inline font-mono text-2xs text-muted ml-auto">
             {project.command}
           </span>
         </div>
@@ -165,9 +188,7 @@ export default function Projects() {
         transition={{ duration: 0.6 }}
         className="max-w-6xl mx-auto"
       >
-        <h2 className="font-mono text-lg text-muted mb-10">
-          <span className="text-secondary">#</span> DEPLOYMENTS
-        </h2>
+        <SectionHeader path="projects" command="kubectl get deployments" title="Projects" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {projects.map((project, i) => (

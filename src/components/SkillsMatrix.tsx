@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
+import SectionHeader from "@/components/SectionHeader";
 
 type StatusType = "ACTIVE" | "LEARNING";
 
@@ -106,7 +107,7 @@ function StatusBadge({ status }: { status: StatusType }) {
   return (
     <span className="flex items-center gap-1.5 shrink-0">
       <span className={`w-2 h-2 rounded-full ${statusDotColors[status]}`} />
-      <span className={`font-mono text-[10px] uppercase ${statusColors[status]}`}>
+      <span className={`font-mono text-2xs uppercase ${statusColors[status]}`}>
         {status}
       </span>
     </span>
@@ -171,9 +172,7 @@ export default function SkillsMatrix() {
         transition={{ duration: 0.6 }}
         className="max-w-6xl mx-auto"
       >
-        <h2 className="font-mono text-lg text-muted mb-10">
-          <span className="text-secondary">#</span> SKILLS_MATRIX
-        </h2>
+        <SectionHeader path="skills" command="ls -la" title="Skills" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {panels.map((panel, panelIndex) => (

@@ -9,7 +9,9 @@
   --color-surface: #111827;
   --color-border: #1e3a5f;
   --color-text: #e2e8f0;
-  --color-muted: #64748b;
+  --color-muted: #8b9bb4;
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'IBM Plex Sans', sans-serif;
 }

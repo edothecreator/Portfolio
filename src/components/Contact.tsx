@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
+import SectionHeader from "@/components/SectionHeader";
 
 const channels = [
   {
@@ -60,9 +61,7 @@ export default function Contact() {
         transition={{ duration: 0.6 }}
         className="max-w-4xl mx-auto"
       >
-        <h2 className="font-mono text-lg text-muted mb-10">
-          <span className="text-secondary">#</span> ESTABLISH_CONNECTION
-        </h2>
+        <SectionHeader path="contact" command="cat channels.txt" title="Contact" />
 
         <div className="bg-surface border border-border rounded-xl overflow-hidden">
           {/* SSH header */}
@@ -156,7 +155,7 @@ export default function Contact() {
 
                   {/* Text */}
                   <div className="relative z-10 min-w-0">
-                    <p className={`font-mono text-[10px] text-muted uppercase tracking-widest transition-colors duration-200 ${channel.text}`}>
+                    <p className={`font-mono text-2xs text-muted uppercase tracking-widest transition-colors duration-200 ${channel.text}`}>
                       {channel.label}
                     </p>
                     <p className={`font-mono text-sm text-text truncate transition-colors duration-200 ${channel.text}`}>
@@ -166,7 +165,8 @@ export default function Contact() {
 
                   {/* Arrow indicator */}
                   <motion.span
-                    className="relative z-10 ml-auto font-mono text-muted/30 text-xs shrink-0"
+                    className="relative z-10 ml-auto font-mono text-muted text-xs shrink-0"
+                    aria-hidden="true"
                     initial={{ x: 0, opacity: 0.3 }}
                     whileHover={{ x: 3, opacity: 0.8 }}
                     transition={{ duration: 0.2 }}
@@ -202,7 +202,7 @@ export default function Contact() {
           <p className="font-mono text-xs text-muted">
             Built by Edo. Deployed to the cloud. Documented in Terraform.
           </p>
-          <p className="font-mono text-[10px] text-muted/50 mt-2">
+          <p className="font-mono text-2xs text-muted mt-2">
             $ terraform apply -auto-approve
           </p>
         </div>

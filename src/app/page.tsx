@@ -18,21 +18,23 @@ const navLinks = [
 
 export default function Home() {
   const [booted, setBooted] = useState(false);
+  // true when the boot was skipped, so the overlay is removed without an exit animation
+  const [bootSkipped, setBootSkipped] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleBootComplete = useCallback(() => setBooted(true), []);
+  const handleBootComplete = useCallback((instant: boolean) => {
+    setBootSkipped(instant);
+    setBooted(true);
+  }, []);
 
   return (
     <main className="relative">
-      <AnimatePresence>
+      <AnimatePresence custom={bootSkipped}>
         {!booted && <BootSequence onComplete={handleBootComplete} />}
       </AnimatePresence>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={booted ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-      >
+      {/* Page content renders immediately; the boot sequence is an overlay on top */}
+      <div>
         {/* ── Navigation ── */}
         <nav className="fixed top-0 left-0 right-0 z-40 bg-bg/80 backdrop-blur-md border-b border-border/50">
           <div className="max-w-6xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
@@ -113,7 +115,7 @@ export default function Home() {
         <Projects />
         <Terminal />
         <Contact />
-      </motion.div>
+      </div>
     </main>
   );
 }
